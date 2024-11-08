@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Deriv Analysis Tool</title>
-  <!-- Ensure that the CSS is loaded first -->
+  <!-- Ensure CSS is loaded before JS -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -31,9 +31,12 @@
       <p>Even Digits: <span id="even-percentage">0%</span></p>
       <p>Odd Digits: <span id="odd-percentage">0%</span></p>
     </div>
+    <div id="predicted-next-digit">
+      <p>Predicted Next Digit: <span id="predicted-next-digit">--</span></p>
+    </div>
   </div>
-  
-  <!-- JS goes last, right before closing body tag -->
+
+  <!-- Load JavaScript after the page content -->
   <script src="script.js"></script>
 </body>
 </html>
