@@ -3,33 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jupynalysis Tools</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Deriv Analysis Tool</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
-    <h1>Jupynalysis Tools</h1>
-
-    <!-- Asset and Market Selectors -->
-    <label for="assetSelect">Select Asset:</label>
-    <select id="assetSelect"></select>
-
-    <label for="marketSelect">Select Market:</label>
-    <select id="marketSelect">
-      <option value="rise_fall">Rise/Fall</option>
-      <!-- Add more market options as needed -->
-    </select>
-
-    <!-- Analysis Buttons -->
-    <div class="buttons">
-      <button id="startBtn" class="btn blue">Start Analysis</button>
-      <button id="stopBtn" class="btn red">Stop Analysis</button>
+    <h1>Deriv Analysis Tool</h1>
+    <button id="run-analysis">Run Analysis</button>
+    <div id="current-tick">
+      <p>Current Tick Price: <span id="tick-price">--</span></p>
+      <p>Last Digit: <span id="last-digit">--</span></p>
+      <p>Total Ticks: <span id="tick-count">0</span></p>
     </div>
-
-    <!-- Display Area for Analysis -->
-    <div id="analysisResults"></div>
+    <table id="digit-percentage-table">
+      <thead>
+        <tr>
+          <th>Digit</th>
+          <th>Percentage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Digit percentages will be inserted here -->
+      </tbody>
+    </table>
+    <div id="even-odd-percentage">
+      <p>Even Digits: <span id="even-percentage">0%</span></p>
+      <p>Odd Digits: <span id="odd-percentage">0%</span></p>
+    </div>
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>
