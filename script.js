@@ -25,8 +25,6 @@ document.getElementById("run-analysis").onclick = () => {
 
     if (data.msg_type === 'authorize' && data.authorize.status === 'ok') {
       console.log("Authorized successfully.");
-      // After authorization, fetch the last 25 ticks
-      fetchLastTicks();
     }
 
     if (data.msg_type === 'ticks') {
@@ -34,10 +32,6 @@ document.getElementById("run-analysis").onclick = () => {
       const lastDigit = tickPrice.toFixed(2).slice(-1);
       updateTickData(tickPrice, parseInt(lastDigit));
       updateDisplay(tickPrice, lastDigit);
-    }
-
-    if (data.msg_type === 'history') {
-      handleHistoricalTicks(data.history);
     }
   };
 
@@ -49,30 +43,6 @@ document.getElementById("run-analysis").onclick = () => {
     console.log("WebSocket connection closed.");
   };
 };
-
-// Fetch the last 25 ticks from history
-function fetchLastTicks() {
-  console.log("Fetching last 25 ticks...");
-  socket.send(JSON.stringify({
-    ticks_history: "R_50",
-    adjust_start_time: 1,
-    count: 25,
-    end: "latest",
-    start: 1,
-    style: "ticks"
-  }));
-}
-
-// Handle historical ticks
-function handleHistoricalTicks(history) {
-  console.log("Handling historical ticks...");
-  history.forEach(tick => {
-    const tickPrice = parseFloat(tick.quote);
-    const lastDigit = tickPrice.toFixed(2).slice(-1);
-    updateTickData(tickPrice, parseInt(lastDigit));
-    updateDisplay(tickPrice, lastDigit);
-  });
-}
 
 // Update statistics with the new tick
 function updateTickData(tickPrice, lastDigit) {
