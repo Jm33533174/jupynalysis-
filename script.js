@@ -2,33 +2,40 @@ const appId = '65355';  // Specified App ID
 const token = 'sd6rB58yVyxti8B';  // API token
 
 let socket;
-let tickPrices = [];
-let digitCounts = Array(10).fill(0);
-let evenCount = 0;
-let oddCount = 0;
-let totalTicks = 0;
+let tickPrices = [];  // Store the last digits of the ticks
+let digitCounts = Array(10).fill(0);  // Array to count occurrences of each digit (0-9)
+let evenCount = 0;  // Count of even digits
+let oddCount = 0;   // Count of odd digits
+let totalTicks = 0; // Total number of ticks received
 
+// Run analysis button click handler
 document.getElementById("run-analysis").onclick = () => {
   // Initialize WebSocket and start receiving ticks
   socket = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=' + appId);
 
   socket.onopen = () => {
+    // Authorize the WebSocket connection
     socket.send(JSON.stringify({ authorize: token }));
-    socket.send(JSON.stringify({ ticks: "R_50", subscribe: 1 }));
   };
 
   socket.onmessage = (message) => {
     const data = JSON.parse(message.data);
 
-    if (data.msg_type === 'authorize') {
-      console.log("Authorized");
+    if (data.msg_type === 'authorize' && data.authorize.status === 'ok') {
+      console.log("Authorized successfully.");
+      // After authorization, fetch the last 25 ticks
+      fetchLastTicks();
     }
 
-    if (data.msg_type === 'tick') {
+    if (data.msg_type === 'ticks') {
       const tickPrice = parseFloat(data.tick.quote);
       const lastDigit = tickPrice.toFixed(2).slice(-1);
       updateTickData(tickPrice, parseInt(lastDigit));
       updateDisplay(tickPrice, lastDigit);
+    }
+
+    if (data.msg_type === 'history') {
+      handleHistoricalTicks(data.history);
     }
   };
 
@@ -41,26 +48,54 @@ document.getElementById("run-analysis").onclick = () => {
   };
 };
 
-function updateTickData(tickPrice, lastDigit) {
-  tickPrices.push(lastDigit);
-  totalTicks++;
-
-  if (tickPrices.length > 25) {
-    const removedDigit = tickPrices.shift();
-    digitCounts[removedDigit]--;
-    removedDigit % 2 === 0 ? evenCount-- : oddCount--;
-  }
-
-  digitCounts[lastDigit]++;
-  lastDigit % 2 === 0 ? evenCount++ : oddCount++;
-
-  updateDigitPercentages();
-  updateEvenOddPercentages();
+// Fetch the last 25 ticks from history
+function fetchLastTicks() {
+  // Request last 25 ticks for the R_50 asset
+  socket.send(JSON.stringify({
+    ticks_history: "R_50",
+    adjust_start_time: 1,
+    count: 25,
+    end: "latest",
+    start: 1,
+    style: "ticks"
+  }));
 }
 
+// Handle historical ticks (initial 25 ticks)
+function handleHistoricalTicks(history) {
+  if (history) {
+    history.forEach(tick => {
+      const tickPrice = parseFloat(tick.quote);
+      const lastDigit = tickPrice.toFixed(2).slice(-1);
+      updateTickData(tickPrice, parseInt(lastDigit));
+      updateDisplay(tickPrice, lastDigit);
+    });
+  }
+}
+
+// Update statistics with the new tick
+function updateTickData(tickPrice, lastDigit) {
+  tickPrices.push(lastDigit); // Add the new tick digit to the array
+  totalTicks++;
+
+  // Maintain only the last 25 ticks
+  if (tickPrices.length > 25) {
+    const removedDigit = tickPrices.shift();  // Remove the oldest tick
+    digitCounts[removedDigit]--;  // Decrease the count of the removed digit
+    removedDigit % 2 === 0 ? evenCount-- : oddCount--;  // Update even/odd counts
+  }
+
+  digitCounts[lastDigit]++;  // Increase the count for the new last digit
+  lastDigit % 2 === 0 ? evenCount++ : oddCount++;  // Update even/odd counts
+
+  updateDigitPercentages();  // Update the percentages of last digits
+  updateEvenOddPercentages();  // Update the percentages of even/odd
+}
+
+// Update the digit percentage table
 function updateDigitPercentages() {
   const tbody = document.querySelector("#digit-percentage-table tbody");
-  tbody.innerHTML = "";
+  tbody.innerHTML = "";  // Clear the table
 
   digitCounts.forEach((count, digit) => {
     if (count > 0) {
@@ -75,6 +110,7 @@ function updateDigitPercentages() {
   });
 }
 
+// Update the even/odd percentages
 function updateEvenOddPercentages() {
   const evenPercentage = ((evenCount / totalTicks) * 100).toFixed(2);
   const oddPercentage = ((oddCount / totalTicks) * 100).toFixed(2);
@@ -83,6 +119,7 @@ function updateEvenOddPercentages() {
   document.getElementById("odd-percentage").textContent = `${oddPercentage}%`;
 }
 
+// Update the display with the latest tick information
 function updateDisplay(tickPrice, lastDigit) {
   document.getElementById("tick-price").textContent = tickPrice.toFixed(2);
   document.getElementById("last-digit").textContent = lastDigit;
