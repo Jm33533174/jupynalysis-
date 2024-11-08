@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Deriv Analysis Tool</title>
-  <link rel="stylesheet" href="style.css">
+  <!-- Link to the CSS file in the <head> section to ensure styles are applied first -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
@@ -31,6 +32,8 @@
       <p>Odd Digits: <span id="odd-percentage">0%</span></p>
     </div>
   </div>
-  <script src="script.js"></script>
+
+  <!-- Load script.js at the end of the body with defer to avoid blocking the rendering -->
+  <script src="script.js" defer></script>
 </body>
 </html>
