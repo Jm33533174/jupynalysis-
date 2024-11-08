@@ -2,11 +2,11 @@ const appId = '65355';  // Specified App ID
 const token = 'sd6rB58yVyxti8B';  // API token
 
 let socket;
-let tickPrices = [];  // Store the last digits of the ticks
-let digitCounts = Array(10).fill(0);  // Array to count occurrences of each digit (0-9)
-let evenCount = 0;  // Count of even digits
-let oddCount = 0;   // Count of odd digits
-let totalTicks = 0; // Total number of ticks received
+let tickPrices = [];
+let digitCounts = Array(10).fill(0);
+let evenCount = 0;
+let oddCount = 0;
+let totalTicks = 0;
 
 // Run analysis button click handler
 document.getElementById("run-analysis").onclick = () => {
@@ -50,7 +50,6 @@ document.getElementById("run-analysis").onclick = () => {
 
 // Fetch the last 25 ticks from history
 function fetchLastTicks() {
-  // Request last 25 ticks for the R_50 asset
   socket.send(JSON.stringify({
     ticks_history: "R_50",
     adjust_start_time: 1,
@@ -61,41 +60,38 @@ function fetchLastTicks() {
   }));
 }
 
-// Handle historical ticks (initial 25 ticks)
+// Handle historical ticks
 function handleHistoricalTicks(history) {
-  if (history) {
-    history.forEach(tick => {
-      const tickPrice = parseFloat(tick.quote);
-      const lastDigit = tickPrice.toFixed(2).slice(-1);
-      updateTickData(tickPrice, parseInt(lastDigit));
-      updateDisplay(tickPrice, lastDigit);
-    });
-  }
+  history.forEach(tick => {
+    const tickPrice = parseFloat(tick.quote);
+    const lastDigit = tickPrice.toFixed(2).slice(-1);
+    updateTickData(tickPrice, parseInt(lastDigit));
+    updateDisplay(tickPrice, lastDigit);
+  });
 }
 
 // Update statistics with the new tick
 function updateTickData(tickPrice, lastDigit) {
-  tickPrices.push(lastDigit); // Add the new tick digit to the array
+  tickPrices.push(lastDigit);
   totalTicks++;
 
-  // Maintain only the last 25 ticks
   if (tickPrices.length > 25) {
-    const removedDigit = tickPrices.shift();  // Remove the oldest tick
-    digitCounts[removedDigit]--;  // Decrease the count of the removed digit
-    removedDigit % 2 === 0 ? evenCount-- : oddCount--;  // Update even/odd counts
+    const removedDigit = tickPrices.shift();
+    digitCounts[removedDigit]--;
+    removedDigit % 2 === 0 ? evenCount-- : oddCount--;
   }
 
-  digitCounts[lastDigit]++;  // Increase the count for the new last digit
-  lastDigit % 2 === 0 ? evenCount++ : oddCount++;  // Update even/odd counts
+  digitCounts[lastDigit]++;
+  lastDigit % 2 === 0 ? evenCount++ : oddCount++;
 
-  updateDigitPercentages();  // Update the percentages of last digits
-  updateEvenOddPercentages();  // Update the percentages of even/odd
+  updateDigitPercentages();
+  updateEvenOddPercentages();
 }
 
 // Update the digit percentage table
 function updateDigitPercentages() {
   const tbody = document.querySelector("#digit-percentage-table tbody");
-  tbody.innerHTML = "";  // Clear the table
+  tbody.innerHTML = "";
 
   digitCounts.forEach((count, digit) => {
     if (count > 0) {
