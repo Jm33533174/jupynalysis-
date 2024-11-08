@@ -21,12 +21,13 @@ document.getElementById("run-analysis").onclick = () => {
   socket.onmessage = (message) => {
     const data = JSON.parse(message.data);
 
+    // After authorization, fetch the last 25 ticks
     if (data.msg_type === 'authorize' && data.authorize.status === 'ok') {
       console.log("Authorized successfully.");
-      // After authorization, fetch the last 25 ticks
       fetchLastTicks();
     }
 
+    // Handle incoming ticks
     if (data.msg_type === 'ticks') {
       const tickPrice = parseFloat(data.tick.quote);
       const lastDigit = tickPrice.toFixed(2).slice(-1);
@@ -34,6 +35,7 @@ document.getElementById("run-analysis").onclick = () => {
       updateDisplay(tickPrice, lastDigit);
     }
 
+    // Handle historical ticks
     if (data.msg_type === 'history') {
       handleHistoricalTicks(data.history);
     }
