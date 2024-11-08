@@ -4,17 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deriv Analysis Tool</title>
-    <!-- Corrected link to CSS file -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Deriv Analysis Tool</h1>
-    <button id="run-analysis">Run Analysis</button>
-
-    <div id="analysis">
-        <p><strong>Latest Tick Price:</strong> <span id="tick-price">-</span></p>
-        <p><strong>Last Digit:</strong> <span id="last-digit">-</span></p>
-        <p><strong>Total Ticks Processed:</strong> <span id="tick-count">0</span></p>
+    <div class="container">
+        <h1>Deriv Analysis Tool</h1>
+        
+        <button id="run-analysis" class="run-button">Start Analysis</button>
+        
+        <div id="tick-info">
+            <p><strong>Latest Tick Price:</strong> <span id="tick-price">-</span></p>
+            <p><strong>Last Digit:</strong> <span id="last-digit">-</span></p>
+            <p><strong>Total Ticks Processed:</strong> <span id="tick-count">0</span></p>
+        </div>
 
         <h2>Last Digits Percentages:</h2>
         <table id="digit-percentage-table">
@@ -32,7 +34,6 @@
         <p><strong>Odd Digits:</strong> <span id="odd-percentage">0%</span></p>
     </div>
 
-    <!-- Corrected script file path -->
     <script src="script.js"></script>
 </body>
 </html>
