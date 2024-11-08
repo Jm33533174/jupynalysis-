@@ -50,6 +50,7 @@ document.getElementById("run-analysis").onclick = () => {
 
 // Fetch the last 25 ticks from history
 function fetchLastTicks() {
+  // Request last 25 ticks for the R_50 asset
   socket.send(JSON.stringify({
     ticks_history: "R_50",
     adjust_start_time: 1,
@@ -62,12 +63,14 @@ function fetchLastTicks() {
 
 // Handle historical ticks (initial 25 ticks)
 function handleHistoricalTicks(history) {
-  history.forEach(tick => {
-    const tickPrice = parseFloat(tick.quote);
-    const lastDigit = tickPrice.toFixed(2).slice(-1);
-    updateTickData(tickPrice, parseInt(lastDigit));
-    updateDisplay(tickPrice, lastDigit);
-  });
+  if (history) {
+    history.forEach(tick => {
+      const tickPrice = parseFloat(tick.quote);
+      const lastDigit = tickPrice.toFixed(2).slice(-1);
+      updateTickData(tickPrice, parseInt(lastDigit));
+      updateDisplay(tickPrice, lastDigit);
+    });
+  }
 }
 
 // Update statistics with the new tick
