@@ -1,53 +1,49 @@
+/* Basic styles for the Deriv Analysis Tool */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
+    background-color: #f7f7f7;
     color: #333;
-    margin: 0;
     padding: 20px;
+    text-align: center;
 }
 
 h1 {
     font-family: 'Algerian', sans-serif;
-    color: #4CAF50;
-    text-align: center;
+    color: #2d2d2d;
 }
 
 button {
-    display: block;
-    margin: 20px auto;
+    background-color: red;
+    color: white;
     padding: 10px 20px;
     font-size: 16px;
-    background-color: #f44336;
-    color: white;
     border: none;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #d32f2f;
+    background-color: darkred;
 }
 
 #analysis {
-    text-align: center;
+    margin-top: 20px;
 }
 
 table {
+    width: 50%;
     margin: 20px auto;
     border-collapse: collapse;
-    width: 80%;
+}
+
+table, th, td {
+    border: 1px solid #ccc;
 }
 
 th, td {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
+    padding: 10px;
     text-align: center;
 }
 
-thead {
-    background-color: #f44336;
-    color: white;
-}
-
-tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
+td {
+    background-color: #f4f4f4;
 }
