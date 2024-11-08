@@ -2,11 +2,11 @@ const appId = '65355';  // Specified App ID
 const token = 'sd6rB58yVyxti8B';  // API token
 
 let socket;
-let tickPrices = [];
-let digitCounts = Array(10).fill(0);
-let evenCount = 0;
-let oddCount = 0;
-let totalTicks = 0;
+let tickPrices = [];  // Store the last digits of the ticks
+let digitCounts = Array(10).fill(0);  // Array to count occurrences of each digit (0-9)
+let evenCount = 0;  // Count of even digits
+let oddCount = 0;   // Count of odd digits
+let totalTicks = 0; // Total number of ticks received
 
 // Run analysis button click handler
 document.getElementById("run-analysis").onclick = () => {
@@ -60,7 +60,7 @@ function fetchLastTicks() {
   }));
 }
 
-// Handle historical ticks
+// Handle historical ticks (initial 25 ticks)
 function handleHistoricalTicks(history) {
   history.forEach(tick => {
     const tickPrice = parseFloat(tick.quote);
@@ -72,26 +72,27 @@ function handleHistoricalTicks(history) {
 
 // Update statistics with the new tick
 function updateTickData(tickPrice, lastDigit) {
-  tickPrices.push(lastDigit);
+  tickPrices.push(lastDigit); // Add the new tick digit to the array
   totalTicks++;
 
+  // Maintain only the last 25 ticks
   if (tickPrices.length > 25) {
-    const removedDigit = tickPrices.shift();
-    digitCounts[removedDigit]--;
-    removedDigit % 2 === 0 ? evenCount-- : oddCount--;
+    const removedDigit = tickPrices.shift();  // Remove the oldest tick
+    digitCounts[removedDigit]--;  // Decrease the count of the removed digit
+    removedDigit % 2 === 0 ? evenCount-- : oddCount--;  // Update even/odd counts
   }
 
-  digitCounts[lastDigit]++;
-  lastDigit % 2 === 0 ? evenCount++ : oddCount++;
+  digitCounts[lastDigit]++;  // Increase the count for the new last digit
+  lastDigit % 2 === 0 ? evenCount++ : oddCount++;  // Update even/odd counts
 
-  updateDigitPercentages();
-  updateEvenOddPercentages();
+  updateDigitPercentages();  // Update the percentages of last digits
+  updateEvenOddPercentages();  // Update the percentages of even/odd
 }
 
 // Update the digit percentage table
 function updateDigitPercentages() {
   const tbody = document.querySelector("#digit-percentage-table tbody");
-  tbody.innerHTML = "";
+  tbody.innerHTML = "";  // Clear the table
 
   digitCounts.forEach((count, digit) => {
     if (count > 0) {
