@@ -1,1 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jupynalysis Tools</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Jupynalysis Tools</h1>
 
+    <!-- Asset and Market Selectors -->
+    <label for="assetSelect">Select Asset:</label>
+    <select id="assetSelect"></select>
+
+    <label for="marketSelect">Select Market:</label>
+    <select id="marketSelect">
+      <option value="rise_fall">Rise/Fall</option>
+      <!-- Add more market options as needed -->
+    </select>
+
+    <!-- Analysis Buttons -->
+    <div class="buttons">
+      <button id="startBtn" class="btn blue">Start Analysis</button>
+      <button id="stopBtn" class="btn red">Stop Analysis</button>
+    </div>
+
+    <!-- Display Area for Analysis -->
+    <div id="analysisResults"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
