@@ -1,126 +1,90 @@
-console.log("Script Loaded"); // Check if script loads
+const appId = '65355';  // Specified App ID
+const token = 'sd6rB58yVyxti8B';  // API token
 
-// Initialize API connection
-const derivSocket = new WebSocket("wss://ws.binaryws.com/websockets/v3?app_id=65355");
+let socket;
+let tickPrices = [];
+let digitCounts = Array(10).fill(0);
+let evenCount = 0;
+let oddCount = 0;
+let totalTicks = 0;
 
-let tickHistory = [];
-let tickStreamSubscription = null;
-let analysisActive = false;
+document.getElementById("run-analysis").onclick = () => {
+  // Initialize WebSocket and start receiving ticks
+  socket = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=' + appId);
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM Loaded"); // Check if DOM content is loaded
-
-  const assetSelect = document.getElementById("assetSelect");
-  const startBtn = document.getElementById("startBtn");
-  const stopBtn = document.getElementById("stopBtn");
-  const analysisResults = document.getElementById("analysisResults");
-
-  derivSocket.onopen = () => {
-    console.log("WebSocket connection opened");
-    fetchAssets();
+  socket.onopen = () => {
+    socket.send(JSON.stringify({ authorize: token }));
+    socket.send(JSON.stringify({ ticks: "R_50", subscribe: 1 }));
   };
 
-  derivSocket.onerror = (error) => console.error("WebSocket error:", error);
-  derivSocket.onclose = () => console.log("WebSocket connection closed");
+  socket.onmessage = (message) => {
+    const data = JSON.parse(message.data);
 
-  startBtn.addEventListener("click", () => {
-    console.log("Start Analysis button clicked");
-    startAnalysis();
-  });
+    if (data.msg_type === 'authorize') {
+      console.log("Authorized");
+    }
 
-  stopBtn.addEventListener("click", () => {
-    console.log("Stop Analysis button clicked");
-    stopAnalysis();
-  });
-
-  function fetchAssets() {
-    console.log("Fetching assets");
-    derivSocket.send(JSON.stringify({ asset_index: 1 }));
-  }
-
-  derivSocket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    console.log("Message received:", data);
-
-    if (data.msg_type === "asset_index") {
-      populateAssetOptions(data.asset_index);
-    } else if (data.msg_type === "history") {
-      tickHistory = data.history.prices;
-      updateAnalysis();
-    } else if (data.msg_type === "tick") {
-      updateTickStream(data.tick);
+    if (data.msg_type === 'tick') {
+      const tickPrice = parseFloat(data.tick.quote);
+      const lastDigit = tickPrice.toFixed(2).slice(-1);
+      updateTickData(tickPrice, parseInt(lastDigit));
+      updateDisplay(tickPrice, lastDigit);
     }
   };
 
-  function populateAssetOptions(assets) {
-    assetSelect.innerHTML = "";
-    assets.forEach(asset => {
-      const option = document.createElement("option");
-      option.value = asset.symbol;
-      option.textContent = asset.display_name;
-      assetSelect.appendChild(option);
-    });
-    console.log("Assets populated");
+  socket.onerror = (error) => {
+    console.error("WebSocket error:", error);
+  };
+
+  socket.onclose = () => {
+    console.log("WebSocket connection closed.");
+  };
+};
+
+function updateTickData(tickPrice, lastDigit) {
+  tickPrices.push(lastDigit);
+  totalTicks++;
+
+  if (tickPrices.length > 25) {
+    const removedDigit = tickPrices.shift();
+    digitCounts[removedDigit]--;
+    removedDigit % 2 === 0 ? evenCount-- : oddCount--;
   }
 
-  function startAnalysis() {
-    const selectedAsset = assetSelect.value;
-    if (!selectedAsset || analysisActive) return;
+  digitCounts[lastDigit]++;
+  lastDigit % 2 === 0 ? evenCount++ : oddCount++;
 
-    analysisActive = true;
-    console.log("Starting analysis for asset:", selectedAsset);
-    fetchTickHistory(selectedAsset);
-    subscribeToTickStream(selectedAsset);
-  }
+  updateDigitPercentages();
+  updateEvenOddPercentages();
+}
 
-  function stopAnalysis() {
-    analysisActive = false;
-    console.log("Stopping analysis");
-    if (tickStreamSubscription) derivSocket.send(JSON.stringify({ forget: tickStreamSubscription }));
-    analysisResults.innerHTML = "";
-  }
+function updateDigitPercentages() {
+  const tbody = document.querySelector("#digit-percentage-table tbody");
+  tbody.innerHTML = "";
 
-  function fetchTickHistory(asset) {
-    console.log("Fetching tick history for:", asset);
-    derivSocket.send(JSON.stringify({
-      ticks_history: asset,
-      adjust_start_time: 1,
-      count: 1000,
-      end: "latest",
-      start: 1,
-      style: "ticks"
-    }));
-  }
+  digitCounts.forEach((count, digit) => {
+    if (count > 0) {
+      const percentage = ((count / tickPrices.length) * 100).toFixed(2);
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${digit}</td>
+        <td>${percentage}%</td>
+      `;
+      tbody.appendChild(row);
+    }
+  });
+}
 
-  function subscribeToTickStream(asset) {
-    console.log("Subscribing to tick stream for:", asset);
-    derivSocket.send(JSON.stringify({ ticks: asset, subscribe: 1 }));
-  }
+function updateEvenOddPercentages() {
+  const evenPercentage = ((evenCount / totalTicks) * 100).toFixed(2);
+  const oddPercentage = ((oddCount / totalTicks) * 100).toFixed(2);
 
-  function updateTickStream(tickData) {
-    console.log("Tick data received:", tickData);
-    if (tickHistory.length >= 1000) tickHistory.shift(); // Keep last 1000 ticks
-    tickHistory.push(tickData.quote);
-    updateAnalysis();
-  }
+  document.getElementById("even-percentage").textContent = `${evenPercentage}%`;
+  document.getElementById("odd-percentage").textContent = `${oddPercentage}%`;
+}
 
-  function updateAnalysis() {
-    if (!analysisActive) return;
-    const lastDigitsCount = Array(10).fill(0);
-    tickHistory.forEach(price => {
-      const lastDigit = parseInt(price.toString().slice(-1));
-      lastDigitsCount[lastDigit]++;
-    });
-
-    const lastDigitPercentages = lastDigitsCount.map(count => (count / tickHistory.length) * 100);
-    displayAnalysis(lastDigitPercentages);
-  }
-
-  function displayAnalysis(percentages) {
-    console.log("Displaying analysis results");
-    analysisResults.innerHTML = "<h2>Last Digit Percentages (Last 1000 Ticks)</h2>";
-    percentages.forEach((percentage, digit) => {
-      analysisResults.innerHTML += `<p>Digit ${digit}: ${percentage.toFixed(2)}%</p>`;
-    });
-  }
-});
+function updateDisplay(tickPrice, lastDigit) {
+  document.getElementById("tick-price").textContent = tickPrice.toFixed(2);
+  document.getElementById("last-digit").textContent = lastDigit;
+  document.getElementById("tick-count").textContent = totalTicks;
+}
