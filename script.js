@@ -14,20 +14,21 @@ document.getElementById("run-analysis").onclick = () => {
   socket = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=' + appId);
 
   socket.onopen = () => {
+    console.log("WebSocket connection opened.");
     // Authorize the WebSocket connection
     socket.send(JSON.stringify({ authorize: token }));
   };
 
   socket.onmessage = (message) => {
     const data = JSON.parse(message.data);
+    console.log("WebSocket message received:", data);
 
-    // After authorization, fetch the last 25 ticks
     if (data.msg_type === 'authorize' && data.authorize.status === 'ok') {
       console.log("Authorized successfully.");
+      // After authorization, fetch the last 25 ticks
       fetchLastTicks();
     }
 
-    // Handle incoming ticks
     if (data.msg_type === 'ticks') {
       const tickPrice = parseFloat(data.tick.quote);
       const lastDigit = tickPrice.toFixed(2).slice(-1);
@@ -35,7 +36,6 @@ document.getElementById("run-analysis").onclick = () => {
       updateDisplay(tickPrice, lastDigit);
     }
 
-    // Handle historical ticks
     if (data.msg_type === 'history') {
       handleHistoricalTicks(data.history);
     }
@@ -52,6 +52,7 @@ document.getElementById("run-analysis").onclick = () => {
 
 // Fetch the last 25 ticks from history
 function fetchLastTicks() {
+  console.log("Fetching last 25 ticks...");
   socket.send(JSON.stringify({
     ticks_history: "R_50",
     adjust_start_time: 1,
@@ -64,6 +65,7 @@ function fetchLastTicks() {
 
 // Handle historical ticks
 function handleHistoricalTicks(history) {
+  console.log("Handling historical ticks...");
   history.forEach(tick => {
     const tickPrice = parseFloat(tick.quote);
     const lastDigit = tickPrice.toFixed(2).slice(-1);
@@ -119,6 +121,7 @@ function updateEvenOddPercentages() {
 
 // Update the display with the latest tick information
 function updateDisplay(tickPrice, lastDigit) {
+  console.log(`Updating display with Tick Price: ${tickPrice}, Last Digit: ${lastDigit}`);
   document.getElementById("tick-price").textContent = tickPrice.toFixed(2);
   document.getElementById("last-digit").textContent = lastDigit;
   document.getElementById("tick-count").textContent = totalTicks;
