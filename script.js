@@ -8,34 +8,27 @@ let evenCount = 0;
 let oddCount = 0;
 let totalTicks = 0;
 
-// Run analysis button click handler
 document.getElementById("run-analysis").onclick = () => {
   // Initialize WebSocket and start receiving ticks
   socket = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=' + appId);
 
   socket.onopen = () => {
-    // Authorize the WebSocket connection
     socket.send(JSON.stringify({ authorize: token }));
+    socket.send(JSON.stringify({ ticks: "R_50", subscribe: 1 }));
   };
 
   socket.onmessage = (message) => {
     const data = JSON.parse(message.data);
 
-    if (data.msg_type === 'authorize' && data.authorize.status === 'ok') {
-      console.log("Authorized successfully.");
-      // After authorization, fetch the last 25 ticks
-      fetchLastTicks();
+    if (data.msg_type === 'authorize') {
+      console.log("Authorized");
     }
 
-    if (data.msg_type === 'ticks') {
+    if (data.msg_type === 'tick') {
       const tickPrice = parseFloat(data.tick.quote);
       const lastDigit = tickPrice.toFixed(2).slice(-1);
       updateTickData(tickPrice, parseInt(lastDigit));
       updateDisplay(tickPrice, lastDigit);
-    }
-
-    if (data.msg_type === 'history') {
-      handleHistoricalTicks(data.history);
     }
   };
 
@@ -48,29 +41,6 @@ document.getElementById("run-analysis").onclick = () => {
   };
 };
 
-// Fetch the last 25 ticks from history
-function fetchLastTicks() {
-  socket.send(JSON.stringify({
-    ticks_history: "R_50",
-    adjust_start_time: 1,
-    count: 25,
-    end: "latest",
-    start: 1,
-    style: "ticks"
-  }));
-}
-
-// Handle historical ticks
-function handleHistoricalTicks(history) {
-  history.forEach(tick => {
-    const tickPrice = parseFloat(tick.quote);
-    const lastDigit = tickPrice.toFixed(2).slice(-1);
-    updateTickData(tickPrice, parseInt(lastDigit));
-    updateDisplay(tickPrice, lastDigit);
-  });
-}
-
-// Update statistics with the new tick
 function updateTickData(tickPrice, lastDigit) {
   tickPrices.push(lastDigit);
   totalTicks++;
@@ -88,7 +58,6 @@ function updateTickData(tickPrice, lastDigit) {
   updateEvenOddPercentages();
 }
 
-// Update the digit percentage table
 function updateDigitPercentages() {
   const tbody = document.querySelector("#digit-percentage-table tbody");
   tbody.innerHTML = "";
@@ -106,7 +75,6 @@ function updateDigitPercentages() {
   });
 }
 
-// Update the even/odd percentages
 function updateEvenOddPercentages() {
   const evenPercentage = ((evenCount / totalTicks) * 100).toFixed(2);
   const oddPercentage = ((oddCount / totalTicks) * 100).toFixed(2);
@@ -115,7 +83,6 @@ function updateEvenOddPercentages() {
   document.getElementById("odd-percentage").textContent = `${oddPercentage}%`;
 }
 
-// Update the display with the latest tick information
 function updateDisplay(tickPrice, lastDigit) {
   document.getElementById("tick-price").textContent = tickPrice.toFixed(2);
   document.getElementById("last-digit").textContent = lastDigit;
