@@ -1,90 +1,66 @@
-const appId = '65355';  // Specified App ID
-const token = 'sd6rB58yVyxti8B';  // API token
+@import url('https://fonts.googleapis.com/css2?family=Algerian&display=swap');
 
-let socket;
-let tickPrices = [];
-let digitCounts = Array(10).fill(0);
-let evenCount = 0;
-let oddCount = 0;
-let totalTicks = 0;
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+}
 
-document.getElementById("run-analysis").onclick = () => {
-  // Initialize WebSocket and start receiving ticks
-  socket = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=' + appId);
+.container {
+  text-align: center;
+  width: 350px;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+}
 
-  socket.onopen = () => {
-    socket.send(JSON.stringify({ authorize: token }));
-    socket.send(JSON.stringify({ ticks: "R_50", subscribe: 1 }));
-  };
+h1 {
+  font-family: 'Algerian', serif;
+  font-size: 2em;
+  color: #333;
+  margin-bottom: 20px;
+}
 
-  socket.onmessage = (message) => {
-    const data = JSON.parse(message.data);
+#run-analysis {
+  font-size: 1em;
+  color: white;
+  background-color: red;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
 
-    if (data.msg_type === 'authorize') {
-      console.log("Authorized");
+#current-tick p {
+  font-size: 1.2em;
+}
+
+table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+td {
+  font-weight: bold;
+}
+
+#even-odd-percentage p {
+  font-size: 1.2em;
+  margin: 10px 0;
     }
-
-    if (data.msg_type === 'tick') {
-      const tickPrice = parseFloat(data.tick.quote);
-      const lastDigit = tickPrice.toFixed(2).slice(-1);
-      updateTickData(tickPrice, parseInt(lastDigit));
-      updateDisplay(tickPrice, lastDigit);
-    }
-  };
-
-  socket.onerror = (error) => {
-    console.error("WebSocket error:", error);
-  };
-
-  socket.onclose = () => {
-    console.log("WebSocket connection closed.");
-  };
-};
-
-function updateTickData(tickPrice, lastDigit) {
-  tickPrices.push(lastDigit);
-  totalTicks++;
-
-  if (tickPrices.length > 25) {
-    const removedDigit = tickPrices.shift();
-    digitCounts[removedDigit]--;
-    removedDigit % 2 === 0 ? evenCount-- : oddCount--;
-  }
-
-  digitCounts[lastDigit]++;
-  lastDigit % 2 === 0 ? evenCount++ : oddCount++;
-
-  updateDigitPercentages();
-  updateEvenOddPercentages();
-}
-
-function updateDigitPercentages() {
-  const tbody = document.querySelector("#digit-percentage-table tbody");
-  tbody.innerHTML = "";
-
-  digitCounts.forEach((count, digit) => {
-    if (count > 0) {
-      const percentage = ((count / tickPrices.length) * 100).toFixed(2);
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${digit}</td>
-        <td>${percentage}%</td>
-      `;
-      tbody.appendChild(row);
-    }
-  });
-}
-
-function updateEvenOddPercentages() {
-  const evenPercentage = ((evenCount / totalTicks) * 100).toFixed(2);
-  const oddPercentage = ((oddCount / totalTicks) * 100).toFixed(2);
-
-  document.getElementById("even-percentage").textContent = `${evenPercentage}%`;
-  document.getElementById("odd-percentage").textContent = `${oddPercentage}%`;
-}
-
-function updateDisplay(tickPrice, lastDigit) {
-  document.getElementById("tick-price").textContent = tickPrice.toFixed(2);
-  document.getElementById("last-digit").textContent = lastDigit;
-  document.getElementById("tick-count").textContent = totalTicks;
-}
