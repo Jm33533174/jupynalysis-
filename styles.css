@@ -1,66 +1,53 @@
-@import url('https://fonts.googleapis.com/css2?family=Algerian&display=swap');
-
 body {
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-  background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-}
-
-.container {
-  text-align: center;
-  width: 350px;
-  padding: 20px;
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 10px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 20px;
 }
 
 h1 {
-  font-family: 'Algerian', serif;
-  font-size: 2em;
-  color: #333;
-  margin-bottom: 20px;
+    font-family: 'Algerian', sans-serif;
+    color: #4CAF50;
+    text-align: center;
 }
 
-#run-analysis {
-  font-size: 1em;
-  color: white;
-  background-color: red;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-bottom: 20px;
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    cursor: pointer;
 }
 
-#current-tick p {
-  font-size: 1.2em;
+button:hover {
+    background-color: #d32f2f;
+}
+
+#analysis {
+    text-align: center;
 }
 
 table {
-  width: 100%;
-  margin-top: 20px;
-  border-collapse: collapse;
+    margin: 20px auto;
+    border-collapse: collapse;
+    width: 80%;
 }
 
 th, td {
-  border: 1px solid #ccc;
-  padding: 10px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    text-align: center;
 }
 
-th {
-  background-color: #f2f2f2;
+thead {
+    background-color: #f44336;
+    color: white;
 }
 
-td {
-  font-weight: bold;
-}
-
-#even-odd-percentage p {
-  font-size: 1.2em;
-  margin: 10px 0;
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
 }
