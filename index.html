@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deriv Analysis Tool</title>
-  <!-- Link to the CSS file in the <head> section to ensure styles are applied first -->
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deriv Analysis Tool</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Deriv Analysis Tool</h1>
-    <button id="run-analysis">Run Analysis</button>
-    <div id="current-tick">
-      <p>Current Tick Price: <span id="tick-price">--</span></p>
-      <p>Last Digit: <span id="last-digit">--</span></p>
-      <p>Total Ticks: <span id="tick-count">0</span></p>
-    </div>
-    <table id="digit-percentage-table">
-      <thead>
-        <tr>
-          <th>Digit</th>
-          <th>Percentage</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Digit percentages will be inserted here -->
-      </tbody>
-    </table>
-    <div id="even-odd-percentage">
-      <p>Even Digits: <span id="even-percentage">0%</span></p>
-      <p>Odd Digits: <span id="odd-percentage">0%</span></p>
-    </div>
-  </div>
+    <div class="container">
+        <h1>Deriv Analysis Tool</h1>
+        
+        <button id="run-analysis" class="run-button">Start Analysis</button>
+        
+        <div id="tick-info">
+            <p><strong>Latest Tick Price:</strong> <span id="tick-price">-</span></p>
+            <p><strong>Last Digit:</strong> <span id="last-digit">-</span></p>
+            <p><strong>Total Ticks Processed:</strong> <span id="tick-count">0</span></p>
+        </div>
 
-  <!-- Load script.js at the end of the body with defer to avoid blocking the rendering -->
-  <script src="script.js" defer></script>
+        <h2>Last Digits Percentages:</h2>
+        <table id="digit-percentage-table">
+            <thead>
+                <tr>
+                    <th>Digit</th>
+                    <th>Percentage</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <h2>Even/Odd Percentages:</h2>
+        <p><strong>Even Digits:</strong> <span id="even-percentage">0%</span></p>
+        <p><strong>Odd Digits:</strong> <span id="odd-percentage">0%</span></p>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
