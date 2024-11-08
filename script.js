@@ -10,89 +10,92 @@ let totalTicks = 0;
 
 // Run analysis button click handler
 document.getElementById("run-analysis").onclick = () => {
-  // Initialize WebSocket and start receiving ticks
-  socket = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=' + appId);
+    console.log("Run button clicked, initializing WebSocket...");
+    
+    // Initialize WebSocket and start receiving ticks
+    socket = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=' + appId);
 
-  socket.onopen = () => {
-    console.log("WebSocket connection opened.");
-    // Authorize the WebSocket connection
-    socket.send(JSON.stringify({ authorize: token }));
-  };
+    socket.onopen = () => {
+        console.log("WebSocket connection opened.");
+        // Authorize the WebSocket connection
+        socket.send(JSON.stringify({ authorize: token }));
+    };
 
-  socket.onmessage = (message) => {
-    const data = JSON.parse(message.data);
-    console.log("WebSocket message received:", data);
+    socket.onmessage = (message) => {
+        const data = JSON.parse(message.data);
+        console.log("WebSocket message received:", data);
 
-    if (data.msg_type === 'authorize' && data.authorize.status === 'ok') {
-      console.log("Authorized successfully.");
-    }
+        if (data.msg_type === 'authorize' && data.authorize.status === 'ok') {
+            console.log("Authorized successfully.");
+        }
 
-    if (data.msg_type === 'ticks') {
-      const tickPrice = parseFloat(data.tick.quote);
-      const lastDigit = tickPrice.toFixed(2).slice(-1);
-      updateTickData(tickPrice, parseInt(lastDigit));
-      updateDisplay(tickPrice, lastDigit);
-    }
-  };
+        if (data.msg_type === 'ticks') {
+            const tickPrice = parseFloat(data.tick.quote);
+            const lastDigit = tickPrice.toFixed(2).slice(-1);
+            console.log(`Tick Price: ${tickPrice}, Last Digit: ${lastDigit}`);
+            updateTickData(tickPrice, parseInt(lastDigit));
+            updateDisplay(tickPrice, lastDigit);
+        }
+    };
 
-  socket.onerror = (error) => {
-    console.error("WebSocket error:", error);
-  };
+    socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+    };
 
-  socket.onclose = () => {
-    console.log("WebSocket connection closed.");
-  };
+    socket.onclose = () => {
+        console.log("WebSocket connection closed.");
+    };
 };
 
 // Update statistics with the new tick
 function updateTickData(tickPrice, lastDigit) {
-  tickPrices.push(lastDigit);
-  totalTicks++;
+    tickPrices.push(lastDigit);
+    totalTicks++;
 
-  if (tickPrices.length > 25) {
-    const removedDigit = tickPrices.shift();
-    digitCounts[removedDigit]--;
-    removedDigit % 2 === 0 ? evenCount-- : oddCount--;
-  }
+    if (tickPrices.length > 25) {
+        const removedDigit = tickPrices.shift();
+        digitCounts[removedDigit]--;
+        removedDigit % 2 === 0 ? evenCount-- : oddCount--;
+    }
 
-  digitCounts[lastDigit]++;
-  lastDigit % 2 === 0 ? evenCount++ : oddCount++;
+    digitCounts[lastDigit]++;
+    lastDigit % 2 === 0 ? evenCount++ : oddCount++;
 
-  updateDigitPercentages();
-  updateEvenOddPercentages();
+    updateDigitPercentages();
+    updateEvenOddPercentages();
 }
 
 // Update the digit percentage table
 function updateDigitPercentages() {
-  const tbody = document.querySelector("#digit-percentage-table tbody");
-  tbody.innerHTML = "";
+    const tbody = document.querySelector("#digit-percentage-table tbody");
+    tbody.innerHTML = "";
 
-  digitCounts.forEach((count, digit) => {
-    if (count > 0) {
-      const percentage = ((count / tickPrices.length) * 100).toFixed(2);
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${digit}</td>
-        <td>${percentage}%</td>
-      `;
-      tbody.appendChild(row);
-    }
-  });
+    digitCounts.forEach((count, digit) => {
+        if (count > 0) {
+            const percentage = ((count / tickPrices.length) * 100).toFixed(2);
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${digit}</td>
+                <td>${percentage}%</td>
+            `;
+            tbody.appendChild(row);
+        }
+    });
 }
 
 // Update the even/odd percentages
 function updateEvenOddPercentages() {
-  const evenPercentage = ((evenCount / totalTicks) * 100).toFixed(2);
-  const oddPercentage = ((oddCount / totalTicks) * 100).toFixed(2);
+    const evenPercentage = ((evenCount / totalTicks) * 100).toFixed(2);
+    const oddPercentage = ((oddCount / totalTicks) * 100).toFixed(2);
 
-  document.getElementById("even-percentage").textContent = `${evenPercentage}%`;
-  document.getElementById("odd-percentage").textContent = `${oddPercentage}%`;
+    document.getElementById("even-percentage").textContent = `${evenPercentage}%`;
+    document.getElementById("odd-percentage").textContent = `${oddPercentage}%`;
 }
 
 // Update the display with the latest tick information
 function updateDisplay(tickPrice, lastDigit) {
-  console.log(`Updating display with Tick Price: ${tickPrice}, Last Digit: ${lastDigit}`);
-  document.getElementById("tick-price").textContent = tickPrice.toFixed(2);
-  document.getElementById("last-digit").textContent = lastDigit;
-  document.getElementById("tick-count").textContent = totalTicks;
+    console.log(`Updating display with Tick Price: ${tickPrice}, Last Digit: ${lastDigit}`);
+    document.getElementById("tick-price").textContent = tickPrice.toFixed(2);
+    document.getElementById("last-digit").textContent = lastDigit;
+    document.getElementById("tick-count").textContent = totalTicks;
 }
