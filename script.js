@@ -8,39 +8,7 @@ const digitCounts = Array(10).fill(0);
 let evenCount = 0;
 let oddCount = 0;
 
-// Define the model
-let model;
-
-async function createModel() {
-  model = tf.sequential();
-  model.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [25] }));  // Input layer (25 digits)
-  model.add(tf.layers.dense({ units: 64, activation: 'relu' }));  // Hidden layer
-  model.add(tf.layers.dense({ units: 10, activation: 'softmax' }));  // Output layer (10 possible digits)
-
-  model.compile({
-    optimizer: 'adam',
-    loss: 'categoricalCrossentropy',
-    metrics: ['accuracy']
-  });
-  
-  console.log("Model created and compiled");
-}
-
-// Convert data to tensors and make predictions
-async function predictNextDigit() {
-  // Prepare the data (last 25 digits from tickPrices)
-  const lastDigits = tickPrices.slice(-25);  // Get last 25 digits
-  if (lastDigits.length < 25) return '--';  // If not enough data, return placeholder
-  
-  const inputTensor = tf.tensor2d([lastDigits], [1, 25]);  // Convert to tensor (1x25 matrix)
-  
-  const prediction = model.predict(inputTensor);
-  const predictedIndex = prediction.argMax(-1).dataSync()[0];  // Get the index of the highest probability
-  
-  return predictedIndex;  // Return the predicted digit
-}
-
-document.getElementById("run-analysis").onclick = async () => {
+document.getElementById("run-analysis").onclick = () => {
   // Initialize WebSocket and start receiving ticks
   socket = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=' + appId);
 
@@ -59,15 +27,18 @@ document.getElementById("run-analysis").onclick = async () => {
     if (data.msg_type === 'tick') {
       const tickPrice = parseFloat(data.tick.quote);
       const lastDigit = tickPrice.toFixed(2).slice(-1);
-
-      // Update the tick data and display
       updateTickData(tickPrice, parseInt(lastDigit));
       updateDisplay(tickPrice, lastDigit);
 
-      // Predict the next digit using the trained model
-      predictNextDigit().then(predictedDigit => {
-        document.getElementById("predicted-next-digit").textContent = predictedDigit;
-      });
+      // Check if we should buy based on even or odd percentage conditions
+      const evenPercentage = (evenCount / tickPrices.length) * 100;
+      const oddPercentage = (oddCount / tickPrices.length) * 100;
+
+      if (evenPercentage > 64) {
+        buyContract("CALL"); // Buy CALL for even
+      } else if (oddPercentage > 64) {
+        buyContract("PUT");  // Buy PUT for odd
+      }
     }
   };
 
@@ -86,4 +57,62 @@ function updateTickData(tickPrice, lastDigit) {
   if (tickPrices.length > 25) {
     const removedDigit = tickPrices.shift();
     digitCounts[removedDigit]--;
-    removedDigit % 2 === 0 ? even
+    removedDigit % 2 === 0 ? evenCount-- : oddCount--;
+  }
+
+  digitCounts[lastDigit]++;
+  lastDigit % 2 === 0 ? evenCount++ : oddCount++;
+
+  updateDigitPercentages();
+  updateEvenOddPercentages();
+}
+
+function updateDigitPercentages() {
+  const totalTicks = tickPrices.length;
+  const tbody = document.querySelector("#digit-percentage-table tbody");
+  tbody.innerHTML = "";
+
+  digitCounts.forEach((count, digit) => {
+    const percentage = ((count / totalTicks) * 100).toFixed(2);
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${digit}</td>
+      <td>${percentage}%</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function updateEvenOddPercentages() {
+  const totalTicks = tickPrices.length;
+  const evenPercentage = ((evenCount / totalTicks) * 100).toFixed(2);
+  const oddPercentage = ((oddCount / totalTicks) * 100).toFixed(2);
+
+  document.getElementById("even-percentage").textContent = `${evenPercentage}%`;
+  document.getElementById("odd-percentage").textContent = `${oddPercentage}%`;
+}
+
+function updateDisplay(tickPrice, lastDigit) {
+  const tickCount = tickPrices.length;
+  document.getElementById("tick-price").textContent = tickPrice.toFixed(2);
+  document.getElementById("last-digit").textContent = lastDigit;
+  document.getElementById("tick-count").textContent = tickCount;
+}
+
+// Function to buy a contract
+function buyContract(contractType) {
+  console.log(`Buying ${contractType} contract...`);
+
+  socket.send(JSON.stringify({
+    buy: 1,
+    price: 1, // Set stake to 1
+    parameters: {
+      contract_type: contractType, // "CALL" for even, "PUT" for odd
+      symbol: "R_50",
+      duration: 1, // Set duration to 1 tick
+      duration_unit: "t",
+      basis: "stake",
+      currency: "USD"
+    }
+  }));
+}
